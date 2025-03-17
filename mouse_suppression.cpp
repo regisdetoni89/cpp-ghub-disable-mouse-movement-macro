@@ -13,8 +13,7 @@
 // Link against setupapi.lib
 #pragma comment(lib, "setupapi.lib")
 
-DEFINE_GUID(GUID_LOGI_VIRTUAL_BUS_ENUMERATOR_GP, 0xdfbedcdd, 0x2148, 0x416d, 0x9e, 0x4d, 0xce, 0xcc, 0x24, 0x24, 0x12,
-            0x8c);
+DEFINE_GUID(GUID_LOGI_VIRTUAL_BUS_ENUMERATOR_GP, 0xdfbedcdd, 0x2148, 0x416d, 0x9e, 0x4d, 0xce, 0xcc, 0x24, 0x24, 0x12, 0x8c);
 
 
 int main()
@@ -59,32 +58,30 @@ int main()
     }
     SetupDiDestroyDeviceInfoList(hardwareDeviceInfo);
 
-    int c = 0;
+    int c = 0x811;
 
-    while(c<10000000){
+    DWORD IOCTL_BUSENUM_SUPPRESS_MOUSE = CTL_CODE(FILE_DEVICE_BUS_EXTENDER, c, METHOD_BUFFERED, FILE_ANY_ACCESS);
 
-        DWORD IOCTL_BUSENUM_SUPPRESS_MOUSE = CTL_CODE(FILE_DEVICE_BUS_EXTENDER, c, METHOD_BUFFERED, FILE_ANY_ACCESS);
+    HANDLE busEnumerator = CreateFile(pDeviceDetailData->DevicePath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    if (INVALID_HANDLE_VALUE == busEnumerator)
+    {
+        printf("Failed to open up interface.\n");
+        return 4;
+    }
 
-        HANDLE busEnumerator = CreateFile(pDeviceDetailData->DevicePath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-        if (INVALID_HANDLE_VALUE == busEnumerator)
-        {
-            printf("Failed to open up interface.\n");
-            return 4;
-        }
-
-        BOOL ret = DeviceIoControl(busEnumerator, IOCTL_BUSENUM_SUPPRESS_MOUSE, NULL, 0, NULL, 0, NULL, NULL);
-        DWORD error = GetLastError();
-        if(error == 0){
-            printf("%d", c);
-            printf(" GLE: 0x%08x\n", error);
-        }
-        CloseHandle(busEnumerator);
-        c++;
+    BOOL ret = DeviceIoControl(busEnumerator, IOCTL_BUSENUM_SUPPRESS_MOUSE, NULL, 0, NULL, 0, NULL, NULL);
+    DWORD error = GetLastError();
+    if(error == 0){
+        printf("%d", c);
+        printf(" GLE: 0x%08x\n", error);
     }
 
 
 
     printf("Press any key to exit.\n");
     getchar();
+
+    CloseHandle(busEnumerator);
+    
     return 0;
 }
