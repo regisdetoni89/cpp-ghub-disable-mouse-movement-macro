@@ -2,6 +2,14 @@
 #include "UnityInterface.h"
 #include <windows.h>
 #include <iostream>
+#include <winuser.h>
+
+#ifndef IMSOFTWARE
+#define IMSOFTWARE 0x00000001
+#endif
+#ifndef IMO_INJECTED
+#define IMO_INJECTED 0x00000002
+#endif
 
 // Global variables for mouse hook
 HHOOK g_mouseHook = NULL;
@@ -12,14 +20,13 @@ DWORD g_lastHookError = 0;
 LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0) {
         MSLLHOOKSTRUCT* mouseStruct = (MSLLHOOKSTRUCT*)lParam;
-        // Check if the input is injected using the flags
         if (mouseStruct->flags & LLMHF_INJECTED || mouseStruct->flags & LLMHF_LOWER_IL_INJECTED) {
             return 1;
         }
 
         INPUT_MESSAGE_SOURCE source;
         if (GetCurrentInputMessageSource(&source)) {
-            if (source.originId == IMO_INJECTED) {
+            if (source.originId == IMSOFTWARE || source.originId == IMO_INJECTED) {
                 return 1;
             }
         }
